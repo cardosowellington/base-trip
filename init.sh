@@ -12,7 +12,7 @@ WP_ADMIN_USER=admin
 WP_ADMIN_PASS=admin123
 WP_ADMIN_EMAIL=admin@example.com
 WP_PATH="/var/www/html"
-THEME_SLUG="tema-filho"
+THEME_SLUG="child-theme"
 
 echo "Iniciando setup do WordPress com Docker + WP-CLI..."
 
@@ -38,23 +38,27 @@ docker-compose run --rm wpcli core install \
 echo "Instalando plugins básicos..."
 docker-compose run --rm wpcli plugin install yoast-seo contact-form-7 wp-super-cache --activate --path=$WP_PATH
 
-echo "Criando tema filho com Bootstrap..."
+echo "Criando Child Theme com Bootstrap..."
 docker exec -it wordpress bash -c "mkdir -p wp-content/themes/$THEME_SLUG"
 cat <<EOF | docker exec -i wordpress tee wp-content/themes/$THEME_SLUG/style.css > /dev/null
 /*
- Theme Name: Tema Filho
- Template: twentytwentyfive
- Version: 1.0
+  Theme Name: Theme Child
+  Author: Cardoso Wellington
+  URL: https://github.com/cardosowellington
+  Description: Child theme for Cardoso Wellington
+  Template: twentytwentyfive
+  Version: 1.0
+  Slug: child-theme
 */
 EOF
 
 cat <<'EOF' | docker exec -i wordpress tee wp-content/themes/$THEME_SLUG/functions.php > /dev/null
 <?php
-function tema_filho_scripts() {
+function child_theme_scripts() {
     wp_enqueue_style('bootstrap-css', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
     wp_enqueue_script('bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js', array('jquery'), null, true);
 }
-add_action('wp_enqueue_scripts', 'tema_filho_scripts');
+add_action('wp_enqueue_scripts', 'child_theme_scripts');
 ?>
 EOF
 
@@ -77,9 +81,9 @@ cat <<'EOF' | docker exec -i wordpress tee wp-content/themes/$THEME_SLUG/front-p
 <?php get_footer(); ?>
 EOF
 
-echo "Tema filho criado!"
+echo "Child Theme criado!"
 
-echo "Ativando tema filho..."
+echo "Ativando Child Theme..."
 docker-compose run --rm wpcli theme activate $THEME_SLUG --path=$WP_PATH
 
 echo "Criando menu principal..."
