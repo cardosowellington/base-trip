@@ -21,3 +21,44 @@ Este projeto cria um ambiente WordPress completo usando **Docker**, com:
    ```bash
    git clone https://github.com/cardosowellington/base-trip.git
    cd projeto-base-trip
+
+2. Dê permissão de execução ao script:
+   ```bash
+   chmod +x init.sh
+
+3. Execute o script de instalação completo:
+   ```bash
+   ./init.sh
+
+4. Acesse no navegador:
+   http://localhost:8080
+   Login admin:
+      user: admin
+      pass: admin123
+
+
+### 🛠️ Comandos úteis do Docker 
+
+1. Subir containers:
+   ```bash
+   docker-compose up -d
+
+2. Parar containers:
+   ```bash
+   docker-compose down
+   
+3. Ver logs:
+   ```bash
+   docker-compose logs -f
+   
+4. Acessar o container WordPress:
+   ```bash
+   docker exec -it wordpress bash
+
+4. Acessar MySQL:
+   ```bash
+   docker exec -it wp_db mysql -u wp_user -pwp_pass wordpress
+
+
+## OBS:
+- O init.sh pode ser rodado quantas vezes for necessário; ele ignora duplicatas de menu e tema.
