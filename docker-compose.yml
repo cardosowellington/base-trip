@@ -1,64 +1,46 @@
-version: '3.9'
-
 services:
   db:
-    image: mysql:8.0
-    container_name: wp_db
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    image: mysql:5.7
+    command: --default-authentication-plugin=mysql_native_password
     volumes:
       - db_data:/var/lib/mysql
-    networks:
-      - wp-network
-
-  php:
-    build: ./php
-    container_name: wp_php
-    volumes:
-      - ./wordpress:/var/www/html
-    depends_on:
-      - db
-    networks:
-      - wp-network
-
-  wordpress:
-    image: wordpress:6.5-php8.2-apache
-    container_name: wp_app
     restart: always
     environment:
-      WORDPRESS_DB_HOST: db:3306
-      WORDPRESS_DB_NAME: ${MYSQL_DATABASE}
-      WORDPRESS_DB_USER: ${MYSQL_USER}
-      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
-      WORDPRESS_TABLE_PREFIX: ${WORDPRESS_TABLE_PREFIX}
-    volumes:
-      - ./wordpress:/var/www/html
-    ports:
-      - "8080:80"
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+  wordpress:
+    image: wordpress:php8.2-apache
     depends_on:
       - db
-      - php
-    networks:
-      - wp-network
-  
+    ports:
+      - "8080:80"
+    volumes:
+      # - wp_data:/var/www/html
+      - ./wordpress:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+
   wpcli:
     image: wordpress:cli
-    container_name: wp_cli
+    user: "33:33"
+    volumes:
+      - wp_data:/var/www/html
+      - ./php.ini:/usr/local/etc/php/conf.d/memory.ini
     depends_on:
       - db
       - wordpress
-    volumes:
-      - ./wordpress:/var/www/html
-    working_dir: /var/www/html
-    networks:
-      - wp-network
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
 
 volumes:
   db_data:
-
-networks:
-  wp-network:
+  wp_data:

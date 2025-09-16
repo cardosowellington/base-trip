@@ -1,106 +1,80 @@
 #!/bin/bash
 set -e
 
-# Variáveis
-DB_NAME=wp_db
-DB_USER=wp_user
-DB_PASS=wp_pass
-DB_HOST=db
-WP_URL="http://localhost:8080"
-WP_TITLE="Site WordPress Docker"
-WP_ADMIN_USER=admin
-WP_ADMIN_PASS=admin123
-WP_ADMIN_EMAIL=admin@example.com
-WP_PATH="/var/www/html"
-THEME_SLUG="child-theme"
+WP_PATH=/var/www/html
+SITE_URL="http://localhost:8080"
+SITE_TITLE="Meu Site WordPress"
+ADMIN_USER="admin"
+ADMIN_PASS="admin123"
+ADMIN_EMAIL="admin@example.com"
+PARENT_THEME="twentytwentyfour"
+CHILD_THEME="child-theme"
 
-echo "Iniciando setup do WordPress com Docker + WP-CLI..."
+echo "Subindo containers..."
+docker-compose up -d
 
-# Garante que containers estão rodando
-docker-compose up -d --build
-
-echo "Aguardando MySQL iniciar..."
+echo "Aguardando banco de dados..."
 sleep 15
 
-echo "Baixando WordPress pt-BR..."
-docker-compose run --rm wpcli core download --locale=pt_BR --path=$WP_PATH
+WP="docker-compose run --rm -e PHP_MEMORY_LIMIT=512M wpcli wp --path=$WP_PATH --allow-root"
 
-echo "Criando wp-config.php..."
-docker-compose run --rm wpcli config create \
-  --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --path=$WP_PATH --skip-check
+echo "Baixando WordPress pt-BR..."
+$WP core download --locale=pt_BR --force
 
 echo "Instalando WordPress..."
-docker-compose run --rm wpcli core install \
-  --url=$WP_URL --title="$WP_TITLE" \
-  --admin_user=$WP_ADMIN_USER --admin_password=$WP_ADMIN_PASS --admin_email=$WP_ADMIN_EMAIL \
-  --path=$WP_PATH
+$WP config create \
+  --dbname=wordpress \
+  --dbuser=wordpress \
+  --dbpass=wordpress \
+  --dbhost=db:3306 \
+  --skip-check \
+  --force
+
+$WP core install \
+  --url="$SITE_URL" \
+  --title="$SITE_TITLE" \
+  --admin_user="$ADMIN_USER" \
+  --admin_password="$ADMIN_PASS" \
+  --admin_email="$ADMIN_EMAIL" \
+  --skip-email
+
 
 echo "Instalando plugins básicos..."
-docker-compose run --rm wpcli plugin install yoast-seo contact-form-7 wp-super-cache --activate --path=$WP_PATH
+$WP plugin install contact-form-7 --force --activate
 
-echo "Criando Child Theme com Bootstrap..."
-docker exec -it wordpress bash -c "mkdir -p wp-content/themes/$THEME_SLUG"
-cat <<EOF | docker exec -i wordpress tee wp-content/themes/$THEME_SLUG/style.css > /dev/null
-/*
-  Theme Name: Theme Child
-  Author: Cardoso Wellington
-  URL: https://github.com/cardosowellington
-  Description: Child theme for Cardoso Wellington
-  Template: twentytwentyfive
-  Version: 1.0
-  Slug: child-theme
-*/
-EOF
+# echo "Criando tema filho..."
+# CHILD_PATH="$WP_PATH/wp-content/themes/$CHILD_THEME"
+# mkdir -p $CHILD_PATH
 
-cat <<'EOF' | docker exec -i wordpress tee wp-content/themes/$THEME_SLUG/functions.php > /dev/null
-<?php
-function child_theme_scripts() {
-    wp_enqueue_style('bootstrap-css', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
-    wp_enqueue_script('bootstrap-js', 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js', array('jquery'), null, true);
-}
-add_action('wp_enqueue_scripts', 'child_theme_scripts');
-?>
-EOF
+# cat > $CHILD_PATH/style.css <<EOL
+# /*
+# Theme Name: Child Theme
+# Author: Cardoso Wellington
+# Author URI: https://github.com/cardosowellington
+# Description: Wordpress child theme for functional learning.
+# Template: $PARENT_THEME
+# Version: 1.0
+# */
+# @import url("../$PARENT_THEME/style.css");
+# EOL
 
-cat <<'EOF' | docker exec -i wordpress tee wp-content/themes/$THEME_SLUG/front-page.php > /dev/null
-<?php get_header(); ?>
-<div class="container my-5">
-  <div class="row">
-    <?php for($i=1;$i<=3;$i++): ?>
-      <div class="col-md-4">
-        <div class="card mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Card <?php echo $i; ?></h5>
-            <p class="card-text">Exemplo de conteúdo do card <?php echo $i; ?>.</p>
-          </div>
-        </div>
-      </div>
-    <?php endfor; ?>
-  </div>
-</div>
-<?php get_footer(); ?>
-EOF
+# cat > $CHILD_PATH/functions.php <<EOL
+# <?php
+# add_action('wp_enqueue_scripts', function() {
+#     wp_enqueue_style('parent-style', get_template_directory_uri() . '/$PARENT_THEME/style.css');
+# });
+# EOL
 
-echo "Child Theme criado!"
-
-echo "Ativando Child Theme..."
-docker-compose run --rm wpcli theme activate $THEME_SLUG --path=$WP_PATH
+# $WP theme activate $CHILD_THEME
 
 echo "Criando menu principal..."
-docker-compose run --rm wpcli wp menu create "Menu Principal" --path=$WP_PATH || true
-docker-compose run --rm wpcli wp menu item add-custom "Menu Principal" "Início" "$WP_URL" --path=$WP_PATH
-docker-compose run --rm wpcli wp menu item add-custom "Menu Principal" "Sobre" "$WP_URL/sobre" --path=$WP_PATH
-docker-compose run --rm wpcli wp menu item add-custom "Menu Principal" "Serviços" "$WP_URL/servicos" --path=$WP_PATH
-docker-compose run --rm wpcli wp menu item add-custom "Menu Principal" "Blog" "$WP_URL/blog" --path=$WP_PATH
-docker-compose run --rm wpcli wp menu item add-custom "Menu Principal" "Contato" "$WP_URL/contato" --path=$WP_PATH
+$WP menu create "Menu Principal" || true
+$WP menu item add-custom "Menu Principal" Home $SITE_URL || true
+$WP menu item add-custom "Menu Principal" Sobre "$SITE_URL/sobre" || true
+$WP menu item add-custom "Menu Principal" Contato "$SITE_URL/contato" || true
+$WP menu location assign "Menu Principal" primary || true
 
-# Submenus de Serviços
-SERVICOS_ID=$(docker-compose run --rm wpcli wp menu item list "Menu Principal" --path=$WP_PATH --fields=ID,title --format=csv | grep "Serviços" | cut -d',' -f1)
-docker-compose run --rm wpcli wp menu item add-custom "Menu Principal" "Serviço 1" "$WP_URL/servico-1" --parent-id=$SERVICOS_ID --path=$WP_PATH
-docker-compose run --rm wpcli wp menu item add-custom "Menu Principal" "Serviço 2" "$WP_URL/servico-2" --parent-id=$SERVICOS_ID --path=$WP_PATH
-docker-compose run --rm wpcli wp menu item add-custom "Menu Principal" "Serviço 3" "$WP_URL/servico-3" --parent-id=$SERVICOS_ID --path=$WP_PATH
-
-# Atribuir à localização menu-principal
-docker-compose run --rm wpcli wp menu location assign "Menu Principal" menu-principal --path=$WP_PATH
-
-echo "Setup concluído! Acesse: $WP_URL"
+echo "Setup concluído!"
+echo "   Acesse: $SITE_URL"
+echo "   Usuário: $ADMIN_USER"
+echo "   Senha:   $ADMIN_PASS"

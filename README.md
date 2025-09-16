@@ -26,12 +26,16 @@ Este projeto cria um ambiente WordPress completo usando **Docker**, com:
    ```bash
    chmod +x init.sh
 
-3. Execute o script de instalação completo:
+3. Suba os containers:
+   ```bash
+   docker-compose up -d --build
+
+4. Execute o script de instalação completo:
    ```bash
    ./init.sh
 
-4. Acesse no navegador:
-   http://localhost:8080
+5. Acesse no navegador:
+   http://localhost:8080/wp-admin
    Login admin:
       user: admin
       pass: admin123
@@ -58,7 +62,6 @@ Este projeto cria um ambiente WordPress completo usando **Docker**, com:
 4. Acessar MySQL:
    ```bash
    docker exec -it wp_db mysql -u wp_user -pwp_pass wordpress
-
 
 ## OBS:
 - O init.sh pode ser rodado quantas vezes for necessário; ele ignora duplicatas de menu e tema.

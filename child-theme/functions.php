@@ -5,7 +5,10 @@ function child_theme_scripts() {
 }
 add_action('wp_enqueue_scripts', 'child_theme_scripts');
 
-register_nav_menus( array(
-  'menu-principal' => __( 'Menu Principal', 'child-theme' ),
-));
-?>
+
+function child_theme_register_menus() {
+  register_nav_menus([
+    'primary' => __('Menu Principal', 'child-theme'),
+  ]);
+}
+add_action('after_setup_theme', 'child_theme_register_menus');
