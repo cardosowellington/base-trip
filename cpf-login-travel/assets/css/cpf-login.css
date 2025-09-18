@@ -1,0 +1,44 @@
+*, body{
+  box-sizing: border-box;
+}
+#cpf-login-form{
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  border: 2px solid rgba(227,227,227,.5);
+  background-color: rgba(227,216,208,.2);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,.1);
+}
+
+#cpf-login-form input{
+  width: 100%;
+  max-width: 100%;
+  padding: .8rem;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  border-radius: 4px;
+}
+
+#cpf-login-form input:focus{
+  outline: none;
+  border: 2px solid #392E8D;
+}
+
+#cpf-login-form button{
+  width: 100%;
+  padding: 10px;
+  background: #392e8d;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all .3s ease;
+}
+#cpf-login-form button:hover{
+  background-color: #392E8Dcc;
+}
+
+#cpf-login-msg{
+  margin-top: 10px;
+}
