@@ -9,7 +9,7 @@ function cpf_login_handler(){
   check_ajax_referer( 'cpf_login_nonce', 'nonce' );
 
   $cpf_raw = isset( $_POST['cpf'] ) ? sanitize_text_field( $_POST['cpf'] ) : '';
-  require_once  CPF_LOGIN_PATH . 'includes/cpf-functions.php';
+  require_once  LOGIN_PATH . 'includes/cpf-functions.php';
   $cpf = cpf_normalize($cpf_raw);
 
   if( ! cpf_is_valid($cpf) ){
