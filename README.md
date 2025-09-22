@@ -1,4 +1,4 @@
-# 🚀 Projeto Base Trip (Wordpress) com Docker
+# Projeto Base Trip (Wordpress) com Docker
 
 Este projeto cria um ambiente WordPress completo usando **Docker**, com:
 
@@ -9,13 +9,13 @@ Este projeto cria um ambiente WordPress completo usando **Docker**, com:
 - Navbar com menu e submenus totalmente funcional  
 - Criação automática de usuário admin e menu principal  
 
-## ⚙️ Tecnologias
+## Tecnologias
 - PHP 8.2 + Apache
 - MySQL 8.0
 - WordPress 6.5
 - Bootstrap 5 (pré-instalado em tema filho)
 
-## 📦 Como rodar o projeto
+## Como rodar o projeto
 
 1. Clone este repositório:
    ```bash
@@ -41,7 +41,7 @@ Este projeto cria um ambiente WordPress completo usando **Docker**, com:
       pass: admin123
 
 
-### 🛠️ Comandos úteis do Docker 
+### Comandos úteis do Docker 
 
 1. Subir containers:
    ```bash
