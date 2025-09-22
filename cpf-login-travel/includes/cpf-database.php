@@ -9,7 +9,7 @@ function cpf_create_table(){
 
   $sql = "CREATE TABLE $table(
     id mediumint(9) NOT NULL AUTO_INCREMENT,
-    cpf varchar(14) NOT NULL,
+    cpf varchar(11) NOT NULL,
     nome varchar(100) NOT NULL,
     email varchar(150) NOT NULL,
     created_at datetime DEFAULT CURRENT_TIMESTAMP,

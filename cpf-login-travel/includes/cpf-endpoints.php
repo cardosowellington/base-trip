@@ -1,15 +1,16 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 add_action( 'wp_ajax_nopriv_cpf_login', 'cpf_login_handler' );
 add_action( 'wp_ajax_cpf_login', 'cpf_login_handler' );
 
 function cpf_login_handler(){
   check_ajax_referer( 'cpf_login_nonce', 'nonce' );
 
-  $cpf = isset( $_POST['cpf'] ) ? sanitize_text_field( $_POST['cpf'] ) : '';
-
+  $cpf_raw = isset( $_POST['cpf'] ) ? sanitize_text_field( $_POST['cpf'] ) : '';
   require_once  CPF_LOGIN_PATH . 'includes/cpf-functions.php';
-  $cpf = cpf_normalize($cpf);
+  $cpf = cpf_normalize($cpf_raw);
 
   if( ! cpf_is_valid($cpf) ){
     wp_send_json_error( [ 'msg' => 'CPF inválido ou não cadastrado em nossa base' ] );
@@ -17,13 +18,18 @@ function cpf_login_handler(){
 
   global $wpdb;
   $table = $wpdb->prefix . "cpf_users";
-  $user = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM $table WHERE cpf = %s", $cpf ) );
+  $row = $wpdb->get_row( $wpdb->prepare( "SELECT id FROM $table WHERE cpf = %s", $cpf ) );
 
-  if( $user ){
-    $wp_user = get_user_by( 'login', 'cpf_user' );
-    if( ! $wp_user ){
-      $user_id = wp_create_user( 'cpf_user', wp_generate_password(), 'cpf@meucpf.com.br' );
-      $wp_user = get_user_by( 'id', $user_id );
+  if( $row ){
+    $login = 'cpf_user_' . $row->id;
+    $user = get_user_by( 'login', $login );
+    if( ! $user ){
+      $user_id = wp_create_user( $login, wp_generate_password(), $row->email );
+      wp_update_user( [ 'ID' => $user_id, 'display_name' => $row->name ] );
+      $user = get_user_by( 'id', $user_id );
+      if( $user ){
+        $user->set_role( 'subscriber' );
+      }
     }
 
     wp_set_current_user( $user->ID );
@@ -32,5 +38,4 @@ function cpf_login_handler(){
   }else{
     wp_send_json_error( [ 'msg' => 'CPF inválido ou não cadastrado' ] );
   }
-
 }
